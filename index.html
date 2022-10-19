@@ -1,1 +1,80 @@
-test
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CrossPing</title>
+  </head>
+  <body>
+    <div>
+      <h3>Cross Ping Result</h3>
+      <pre id="pingResult"></pre>
+      <script>
+        var pingData = {};
+        let n = 0;
+
+        function updateRes() {
+          document.getElementById('pingResult').innerText = JSON.stringify(pingData, null, 2);
+        }
+
+        for (var i=0; i <= 4; i++) {
+          fetch('https://abs.incolumitas.com/ping') 
+          .then(response => response.json())
+          .then(function(text) {
+            pingData['serverToExternalIP-' + (n++)] = text;
+          })
+          .catch((err) => {
+            pingData['serverToExternalIP-' + (n++)] = err.toString();
+          })
+          .finally(() => {
+            updateRes();
+          })
+        }
+
+        function ping(url, n) {
+          var started = new Date().getTime();
+          var started2 = performance.now();
+          var http = new XMLHttpRequest();
+      
+          var cacheBuster = '?bust=' + (new Date()).getTime()
+          url += cacheBuster;
+      
+          http.open("GET", url, /*async*/true);
+          http.onreadystatechange = function() {
+            if (http.readyState == 4) {
+              var ended = new Date().getTime();
+              var ended2 = performance.now();
+      
+              var milliseconds = ended - started;
+              var milliseconds2 = ended2 - started2;
+      
+              pingData['browserToServer-' + n] = milliseconds2;
+              document.getElementById("pingResult").innerHTML = JSON.stringify(pingData, null, 2);
+            }
+          };
+          try {
+            http.send(null);
+          } catch(exception) {
+            // this is expected
+          }
+        }
+      
+        for (var i=0; i <= 4; i++) {
+          ping("https://incolumitas.com", i);
+        }
+      </script>
+
+      <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const delay = urlParams.get('delay');
+
+        
+        if (delay == '1') {
+          var img = document.createElement('img');
+          img.src = 'https://effigis.com/wp-content/uploads/2015/02/DigitalGlobe_WorldView1_50cm_8bit_BW_DRA_Bangkok_Thailand_2009JAN06_8bits_sub_r_1.jpg';
+          document.body.appendChild(img);
+        }
+      </script>
+    </div>
+  </body>
+</html>
